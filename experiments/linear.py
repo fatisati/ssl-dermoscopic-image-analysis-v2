@@ -22,14 +22,12 @@ from experiment_params import ExperimentParams
 
 def isic2020(image_folder, label_file_path, model_path):
     # image_folder, label_file_path = '', ''
-    image_col, label_col, = 'image_name', 'target'
 
     # data params
     batch_size, image_size = 512, 128
     aug_func = lambda img: augmentation_utils.dermoscopic_augment(img, image_size)
     aug_name = 'dermoscopic-augment'
-    data = ISIC2020(image_folder, label_file_path,
-                    image_col, label_col, image_size)
+    data = ISIC2020(image_folder, label_file_path, image_size)
     train, test, validation = data.get_train_test_validation(aug_func, batch_size)
 
     # model params
