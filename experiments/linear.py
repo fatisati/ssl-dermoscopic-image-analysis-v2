@@ -20,8 +20,8 @@ from experiment_params import ExperimentParams
 # evaluate
 # plots
 
-def isic2020():
-    image_folder, label_file_path = '', ''
+def isic2020(image_folder, label_file_path, model_path):
+    # image_folder, label_file_path = '', ''
     image_col, label_col, = 'image_name', 'target'
 
     # data params
@@ -43,11 +43,11 @@ def isic2020():
     model.compile(optimizer, loss, metrics)
 
     name = 'isic2020-linear'
-    path = '../models/'
+    # path = '../models/'
     epochs = 500
 
     experminet_params = ExperimentParams(data, batch_size, image_size, aug_name,
                                          batchnorm, dropout, attention, hidden_dim,
                                          model_name, loss, optimizer, epochs)
-    experminet_params.save_params(path + name + '/')
-    train_model(model, train, test, validation, name, path, epochs)
+    experminet_params.save_params(model_path + name + '/')
+    train_model(model, train, test, validation, name, model_path, epochs)
