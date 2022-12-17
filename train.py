@@ -46,7 +46,7 @@ def train_model(model, train, test, validation, name, path, epochs):
     # Include the epoch in the file name (uses `str.format`)
     checkpoint_path = f"{path}/{name}" + "-{epoch:04d}.ckpt"
 
-    # Create a callback that saves the model's weights every 5 epochs
+    # Create a callback that saves the model's weights every 10 epochs
     cp_callback = tf.keras.callbacks.ModelCheckpoint(
         filepath=checkpoint_path,
         verbose=1,
@@ -56,9 +56,10 @@ def train_model(model, train, test, validation, name, path, epochs):
     csv_logger = CSVLogger(path + name + '/log.csv', append=True, separator=',')
 
     # Train the model with the new callback
-    model.fit(train,
-              test,
-              epochs=epochs,
-              callbacks=[cp_callback, csv_logger],
-              validation_data=validation,
-              verbose=1)
+    history = model.fit(train,
+                        test,
+                        epochs=epochs,
+                        callbacks=[cp_callback, csv_logger],
+                        validation_data=validation,
+                        verbose=1)
+    return history

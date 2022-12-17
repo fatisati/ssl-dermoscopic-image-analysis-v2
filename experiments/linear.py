@@ -48,4 +48,5 @@ def isic2020(image_folder, label_file_path, model_path):
                                          batchnorm, dropout, attention, hidden_dim,
                                          model_name, loss, optimizer, epochs)
     experminet_params.save_params(model_path + name + '/')
-    train_model(model, train, test, validation, name, model_path, epochs)
+    history = train_model(model, train, test, validation, name, model_path, epochs)
+    return history
