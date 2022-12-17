@@ -3,7 +3,7 @@ from utils import augmentation_utils
 from models import models
 from utils import tf_utils
 from train import train_model
-from experiment_params import ExperimentParams
+from experiments.experiment_params import ExperimentParams
 
 
 # experiment params:

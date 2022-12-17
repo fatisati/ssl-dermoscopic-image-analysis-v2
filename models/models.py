@@ -1,4 +1,4 @@
-import resnet20
+import models.resnet20 as resnet20
 import tensorflow as tf
 
 
