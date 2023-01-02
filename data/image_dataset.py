@@ -6,7 +6,7 @@ from utils.augmentation_utils import dermoscopic_augment
 
 class ImageDataset:
     def __init__(self, image_folder, label_file_path,
-                 image_col, label_col, image_size, split_col='split'):
+                 image_col, label_col, image_size, split_col='split', image_extension='.jpg'):
         self.image_folder = image_folder
         self.data_df = pd.read_csv(label_file_path)
         self.label_set = set(self.data_df[label_col])
@@ -14,9 +14,10 @@ class ImageDataset:
         self.label_col = label_col
         self.split_col = split_col
         self.image_size = image_size
+        self.image_extension = image_extension
 
     def process_sample(self, name, label, aug_func):
-        img = read_tf_image(self.image_folder + name, self.image_size)
+        img = read_tf_image(self.image_folder + name + self.image_extension, self.image_size)
         img = aug_func(img)
         return img, label
 
@@ -38,8 +39,9 @@ class ImageDataset:
 
     def get_train_test_validation(self, aug_func, batch_size):
         return self.get_ds(aug_func, batch_size, 'train'), \
-               self.get_ds(aug_func, batch_size, 'test'), \
-               self.get_ds(aug_func, batch_size, 'validation')
+            self.get_ds(aug_func, batch_size, 'test'), \
+            self.get_ds(aug_func, batch_size, 'validation')
+
 
 if __name__ == '__main__':
     image_folder, label_file_path = '', ''
