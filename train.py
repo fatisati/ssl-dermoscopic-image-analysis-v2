@@ -52,7 +52,7 @@ def save_metrics(result_folder, test_metrics, validation_metrics, metric_names):
 # https://www.tensorflow.org/tutorials/keras/save_and_load
 def train_model(model, train, test, validation, name, path, epochs):
     # Include the epoch in the file name (uses `str.format`)
-    checkpoint_path = f"{path}/{name}" + "-{epoch:04d}.ckpt"
+    checkpoint_path = f"{path}/{name}" + "-best.ckpt"
 
     latest = tf.train.latest_checkpoint(path)
     if latest:
