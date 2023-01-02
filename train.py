@@ -54,7 +54,7 @@ def train_model(model, train, test, validation, name, path, epochs):
     # Include the epoch in the file name (uses `str.format`)
     checkpoint_path = f"{path}/{name}" + "-{epoch:04d}.ckpt"
 
-    latest = tf.train.latest_checkpoint(checkpoint_path)
+    latest = tf.train.latest_checkpoint(path)
     if latest:
         print(f'loading model weights from checkpoint_path {latest}')
         model.load_weights(latest)
