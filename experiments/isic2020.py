@@ -1,3 +1,5 @@
+import os.path
+
 from data.isic2020 import ISIC2020
 from utils import augmentation_utils
 from models import models
@@ -20,8 +22,12 @@ from experiments.experiment_params import ExperimentParams
 # evaluate
 # plots
 
-def isic2020(image_folder, label_file_path, model_path):
-    # image_folder, label_file_path = '', ''
+def linear(image_folder, label_file_path, model_dir, epochs):
+    model_name = 'linear'
+    experiment_name = 'experiment1'
+    result_dir = f'{model_dir}/isic2020/{model_name}/{experiment_name}/'
+    if not os.path.exists(result_dir):
+        os.makedirs(result_dir)
 
     # data params
     print('loading data...')
@@ -37,7 +43,6 @@ def isic2020(image_folder, label_file_path, model_path):
     batchnorm, dropout, attention, hidden_dim = True, False, False, 2048
     model = models.get_linear_classifier(image_size, len(data.label_set), hidden_dim=hidden_dim,
                                          use_batchnorm=batchnorm, use_dropout=dropout)
-    model_name = 'linear'
 
     # compile params
     loss, optimizer, metrics = 'binary_crossentropy', 'adam', tf_utils.get_metrics()
@@ -45,14 +50,10 @@ def isic2020(image_folder, label_file_path, model_path):
     print('---done---')
 
     print('training...')
-    name = 'isic2020-linear'
-    # path = '../models/'
-    epochs = 10
-
     experminet_params = ExperimentParams(data, batch_size, image_size, aug_name,
                                          batchnorm, dropout, attention, hidden_dim,
                                          model_name, loss, optimizer, epochs)
-    experminet_params.save_params(model_path + name + '/')
-    history = train_model(model, train, test, validation, name, model_path, epochs)
+    experminet_params.save_params(result_dir)
+    history = train_model(model, train, test, validation, result_dir, epochs)
     print('---done---')
     return history
