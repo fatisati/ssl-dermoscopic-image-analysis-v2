@@ -58,7 +58,9 @@ def train_model(model, train, test, validation, name, path, epochs):
     if latest:
         print(f'loading model weights from checkpoint_path {latest}')
         model.load_weights(latest)
-        
+    else:
+        print('no checkpoint found')
+
     # Create a callback that saves the model's weights every 10 epochs
     cp_callback = tf.keras.callbacks.ModelCheckpoint(
         filepath=checkpoint_path,
