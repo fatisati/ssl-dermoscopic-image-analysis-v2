@@ -30,6 +30,7 @@ class ImageDataset:
         data_split = self.data_df[self.data_df[self.split_col] == split]
         image_names = list(data_split[self.image_col])
         labels = list(data_split[self.label_col])
+        labels = [self.one_hot(label) for label in labels]
         img_ds = tf.data.Dataset.from_tensor_slices(image_names)
         labels_ds = tf.data.Dataset.from_tensor_slices(labels)
         ds = tf.data.Dataset.zip((img_ds, labels_ds)).map(lambda img, label: self.process_sample(img, label, aug_func))
