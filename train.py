@@ -41,6 +41,14 @@ def check_folder(path, folder):
     print('done')
 
 
+def save_metrics(result_folder, test_metrics, validation_metrics, metric_names):
+    eval_file = open(f'{result_folder}/metrics.csv', 'w')
+    eval_file.write(f'data, {",".join(metric_names)}\n')
+    eval_file.write(f'validation, {",".join(validation_metrics)}\n')
+    eval_file.write(f'test, {",".join(test_metrics)}\n')
+    eval_file.close()
+
+
 # https://www.tensorflow.org/tutorials/keras/save_and_load
 def train_model(model, train, test, validation, name, path, epochs):
     # Include the epoch in the file name (uses `str.format`)
@@ -53,13 +61,17 @@ def train_model(model, train, test, validation, name, path, epochs):
         save_weights_only=True,
         save_freq=10)
 
-    csv_logger = CSVLogger(path + name + '/log.csv', append=True, separator=',')
+    result_folder = path + name + '/'
+    csv_logger = CSVLogger(f'{result_folder}/log.csv', append=True, separator=',')
 
     # Train the model with the new callback
     history = model.fit(train,
-                        test,
                         epochs=epochs,
                         callbacks=[cp_callback, csv_logger],
                         validation_data=validation,
                         verbose=1)
+    test_metrics = model.evaluate(test)
+    validation_metrics = model.evaluate(validation)
+    metric_names = model.metrics_names
+    save_metrics(result_folder, test_metrics, validation_metrics, metric_names)
     return history

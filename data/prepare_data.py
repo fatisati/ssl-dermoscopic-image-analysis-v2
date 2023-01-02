@@ -23,12 +23,21 @@ def split_data(df, test_ratio, validation_ratio, x_col, label_col):
     return df
 
 
-def copy_sample_data(sample_df, image_col, image_zip_path, dest_path,
-                     zip_subfolder, image_extension):
+def copy_sample_data_from_zip(sample_df, image_col, image_zip_path, dest_path,
+                              zip_subfolder, image_extension):
     zip_file = zipfile.ZipFile(image_zip_path)
     for image_name in sample_df[image_col]:
         zip_file.extract(f'{zip_subfolder}/{image_name}.{image_extension}',
                          dest_path)
+
+
+import shutil
+
+
+def copy_sample_data(sample_df, image_col, image_folder, dest_folder, image_extension='.jpg'):
+    for img in sample_df[image_col]:
+        img += image_extension
+        shutil.copy(image_folder + img, dest_folder + img)
 
 
 if __name__ == '__main__':
