@@ -54,6 +54,11 @@ def train_model(model, train, test, validation, name, path, epochs):
     # Include the epoch in the file name (uses `str.format`)
     checkpoint_path = f"{path}/{name}" + "-{epoch:04d}.ckpt"
 
+    latest = tf.train.latest_checkpoint(checkpoint_path)
+    if latest:
+        print(f'loading model weights from checkpoint_path {latest}')
+        model.load_weights(latest)
+        
     # Create a callback that saves the model's weights every 10 epochs
     cp_callback = tf.keras.callbacks.ModelCheckpoint(
         filepath=checkpoint_path,
