@@ -3,6 +3,8 @@ from keras.callbacks import CSVLogger
 
 
 def save_metrics(result_folder, test_metrics, validation_metrics, metric_names):
+    test_metrics = [str(metric) for metric in test_metrics]
+    validation_metrics = [str(metric) for metric in validation_metrics]
     eval_file = open(f'{result_folder}/metrics.csv', 'w')
     eval_file.write(f'data, {",".join(metric_names)}\n')
     eval_file.write(f'validation, {",".join(validation_metrics)}\n')
