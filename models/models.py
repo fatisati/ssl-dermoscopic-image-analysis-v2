@@ -34,8 +34,20 @@ def get_classifier(barlow_encoder, in_shape, out_shape,
     return classifier
 
 
-def get_linear_classifier(in_shape, out_shape, hidden_dim=2048,
+def get_resnet_classifier(in_shape, out_shape, trainable, hidden_dim=2048,
                           use_batchnorm=True, use_dropout=False, dropout_rate=None):
     resnet = resnet20.ResNet(use_batchnorm, use_dropout, dropout_rate)
     backbone = resnet.get_network(in_shape, hidden_dim=hidden_dim)
-    return get_classifier(backbone, in_shape, out_shape, False, False)
+    return get_classifier(backbone, in_shape, out_shape, False, trainable)
+
+
+def get_linear_classifier(in_shape, out_shape, hidden_dim=2048,
+                          use_batchnorm=True, use_dropout=False, dropout_rate=None):
+    return get_resnet_classifier(in_shape, out_shape, False, hidden_dim,
+                                 use_batchnorm, use_dropout, dropout_rate)
+
+
+def get_resnet_fully_supervised_classifier(in_shape, out_shape, hidden_dim=2048,
+                                           use_batchnorm=True, use_dropout=False, dropout_rate=None):
+    return get_resnet_classifier(in_shape, out_shape, True, hidden_dim,
+                                 use_batchnorm, use_dropout, dropout_rate)
