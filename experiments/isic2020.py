@@ -49,7 +49,7 @@ def standard_experiment(image_folder, label_file_path, model_dir, epochs, model_
 
     # data params
     print('loading data...')
-    batch_size, image_size = 32, 128
+    batch_size, image_size = 64, 128
     aug_func = lambda img: augmentation_utils.dermoscopic_augment(img, image_size)
     aug_name = 'dermoscopic-augment'
     data = ISIC2020(image_folder, label_file_path, image_size)
