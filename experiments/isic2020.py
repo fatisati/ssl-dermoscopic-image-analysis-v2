@@ -22,12 +22,15 @@ from experiments.experiment_params import ExperimentParams
 # evaluate
 # plots
 
-def linear(image_folder, label_file_path, model_dir, epochs):
+def linear(image_folder, label_file_path, model_dir, epochs, name):
     def get_linear_model(image_size, label_dim, batchnorm, dropout, attention, hidden_dim):
         return models.get_linear_classifier(image_size, label_dim, hidden_dim=hidden_dim,
                                             use_batchnorm=batchnorm, use_dropout=dropout)
 
-    standard_experiment(image_folder, label_file_path, model_dir, epochs, 'linear', get_linear_model)
+    experiment_id = 'linear'
+    if len(name) > 0:
+        experiment_id = f'{experiment_id}-{name}'
+    standard_experiment(image_folder, label_file_path, model_dir, epochs, experiment_id, get_linear_model)
 
 
 def resnet_fully_supervised(image_folder, label_file_path, model_dir, epochs):
@@ -35,7 +38,8 @@ def resnet_fully_supervised(image_folder, label_file_path, model_dir, epochs):
         return models.get_resnet_fully_supervised_classifier(image_size, label_dim, hidden_dim=hidden_dim,
                                                              use_batchnorm=batchnorm, use_dropout=dropout)
 
-    standard_experiment(image_folder, label_file_path, model_dir, epochs, 'resnet-fully-supervised', get_fully_supervised_model)
+    standard_experiment(image_folder, label_file_path, model_dir, epochs, 'resnet-fully-supervised',
+                        get_fully_supervised_model)
 
 
 def standard_experiment(image_folder, label_file_path, model_dir, epochs, model_name, get_model):
@@ -45,7 +49,7 @@ def standard_experiment(image_folder, label_file_path, model_dir, epochs, model_
 
     # data params
     print('loading data...')
-    batch_size, image_size = 512, 128
+    batch_size, image_size = 32, 128
     aug_func = lambda img: augmentation_utils.dermoscopic_augment(img, image_size)
     aug_name = 'dermoscopic-augment'
     data = ISIC2020(image_folder, label_file_path, image_size)
