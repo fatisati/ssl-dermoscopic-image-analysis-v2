@@ -1,6 +1,12 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import zipfile
+import numpy as np
+from imblearn.over_sampling import RandomOverSampler
+from imblearn.under_sampling import RandomUnderSampler
+from collections import Counter
+import pandas as pd
+import shutil
 
 
 def sample_data(df, sample_size):
@@ -31,19 +37,41 @@ def copy_sample_data_from_zip(sample_df, image_col, image_zip_path, dest_path,
                          dest_path)
 
 
-import shutil
-
-
 def copy_sample_data(sample_df, image_col, image_folder, dest_folder, image_extension='.jpg'):
     for img in sample_df[image_col]:
         img += image_extension
         shutil.copy(image_folder + img, dest_folder + img)
 
 
-if __name__ == '__main__':
+def balance_data(train_df, x_col, y_col, Sampler):
+    x_train, y_train = np.array(train_df[x_col]), np.array(train_df[y_col])
+    sampler = Sampler(random_state=42)
+
+    X_res, y_res = sampler.fit_resample(x_train.reshape(-1, 1), y_train.reshape(-1, 1))
+    print(f"Training target statistics: {Counter(y_res)}")
+
+    balanced_df = pd.DataFrame({x_col: list(X_res[:, 0]), y_col: list(y_res)})
+    return balanced_df
+
+
+def split_isic_data():
     data_folder = '~/data/master-thesis/'
     data = pd.read_csv(f'{data_folder}/labels.csv')
-    # sample_size = 200
-    # sample = sample_data(data, sample_size)
     splited = split_data(data, 0.3, 0.1, 'image_name', 'target')
     splited.to_csv(f'{data_folder}/splitted-data.csv')
+
+
+def under_sample_isic():
+    data_folder = '~/data/master-thesis/'
+    df = pd.read_csv(data_folder + 'splitted-data.csv')
+    train = df[df['split'] == 'train']
+
+    balanced_train = balance_data(train, 'image_name', 'target', RandomUnderSampler)
+    print(f'len original train: {len(train)}, len undersample train: {len(balanced_train)}')
+    to_drop = train[~train['image_name'].isin(balanced_train['image_name'])]
+    balanced_df = df[~df['image_name'].isin(to_drop['image_name'])]
+    print(f'df len: {len(df)}, under sample df len: {len(balanced_df)}')
+    balanced_df.to_csv(data_folder + 'balanced-data.csv')
+
+if __name__ == '__main__':
+    under_sample_isic()
