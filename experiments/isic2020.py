@@ -22,7 +22,7 @@ from experiments.experiment_params import ExperimentParams
 # evaluate
 # plots
 
-def linear(image_folder, label_file_path, model_dir, epochs, name):
+def linear(image_folder, label_file_path, model_dir, epochs, name=''):
     def get_linear_model(image_size, label_dim, batchnorm, dropout, attention, hidden_dim):
         return models.get_linear_classifier(image_size, label_dim, hidden_dim=hidden_dim,
                                             use_batchnorm=batchnorm, use_dropout=dropout)
