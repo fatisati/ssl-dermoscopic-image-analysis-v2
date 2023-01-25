@@ -22,10 +22,16 @@ def identify_train_test_validation(x, test_data, validation):
 
 
 def split_data(df, test_ratio, validation_ratio, x_col, label_col):
-    train, test = train_test_split(df, test_size=test_ratio, random_state=0, stratify=df[[label_col]])
-    validation_ratio = validation_ratio / test_ratio
-    test, validation = train_test_split(test, test_size=validation_ratio, random_state=0, stratify=test[[label_col]])
-    df['split'] = [identify_train_test_validation(x, list(test[x_col]), list(validation[x_col])) for x in df[x_col]]
+    train, test = train_test_split(df, test_size=test_ratio, random_state=0, stratify=df[[label_col]], shuffle= True)
+    if validation_ratio > 0:
+        validation_ratio = validation_ratio / test_ratio
+        test, validation = train_test_split(test, test_size=validation_ratio, random_state=0, stratify=test[[label_col]])
+        validation_names = list(validation[x_col])
+    else:
+        validation_names = []
+    test_names = list(test[x_col])
+    df['split'] = [identify_train_test_validation(x, test_names, validation_names) for x in df[x_col]]
+    print(f'test: {len(test_names)}, validation: {len(validation_names)}, train: {len(df) - len(test_names) - len(validation_names)}')
     return df
 
 
@@ -61,9 +67,9 @@ def split_isic_data():
     splited.to_csv(f'{data_folder}/splitted-data.csv')
 
 
-def under_sample_isic():
+def under_sample_splitted_isic():
     data_folder = '~/data/master-thesis/'
-    df = pd.read_csv(data_folder + 'splitted-data.csv')
+    df = pd.read_csv(data_folder + 'splitted.csv')
     train = df[df['split'] == 'train']
 
     balanced_train = balance_data(train, 'image_name', 'target', RandomUnderSampler)
@@ -71,7 +77,24 @@ def under_sample_isic():
     to_drop = train[~train['image_name'].isin(balanced_train['image_name'])]
     balanced_df = df[~df['image_name'].isin(to_drop['image_name'])]
     print(f'df len: {len(df)}, under sample df len: {len(balanced_df)}')
-    balanced_df.to_csv(data_folder + 'balanced-data.csv')
+    balanced_df.to_csv(data_folder + 'splitted-under-sample.csv')
+
+
+def under_sample_isic():
+    data_folder = '~/data/master-thesis/'
+    df = pd.read_csv(data_folder + 'labels.csv')
+
+    balanced = balance_data(df, 'image_name', 'target', RandomUnderSampler)
+    balanced.to_csv(data_folder + 'under-sample.csv')
+
+
+def split_under_sample():
+    data_folder = '~/data/master-thesis/'
+    data = pd.read_csv(f'{data_folder}/under-sample.csv')
+    splited = split_data(data, 0.2, 0, 'image_name', 'target')
+    splited.to_csv(f'{data_folder}/under-sample-splitted.csv')
+
 
 if __name__ == '__main__':
-    under_sample_isic()
+    # under_sample_isic()
+    split_under_sample()
