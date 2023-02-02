@@ -7,6 +7,7 @@ from imblearn.under_sampling import RandomUnderSampler
 from collections import Counter
 import pandas as pd
 import shutil
+import os
 
 
 def sample_data(df, sample_size):
@@ -22,15 +23,17 @@ def identify_train_test_validation(x, test_data, validation):
 
 
 def split_data(df, test_ratio, validation_ratio, x_col, label_col):
-    train, test = train_test_split(df, test_size=test_ratio, random_state=0, stratify=df[[label_col]], shuffle= True)
+    train, test = train_test_split(df, test_size=test_ratio, random_state=0, stratify=df[[label_col]], shuffle=True)
     if validation_ratio > 0:
-        train, validation = train_test_split(train, test_size=validation_ratio, random_state=0, stratify=train[[label_col]])
+        train, validation = train_test_split(train, test_size=validation_ratio, random_state=0,
+                                             stratify=train[[label_col]])
         validation_names = list(validation[x_col])
     else:
         validation_names = []
     test_names = list(test[x_col])
     df['split'] = [identify_train_test_validation(x, test_names, validation_names) for x in df[x_col]]
-    print(f'test: {len(test_names)}, validation: {len(validation_names)}, train: {len(df) - len(test_names) - len(validation_names)}')
+    print(
+        f'test: {len(test_names)}, validation: {len(validation_names)}, train: {len(df) - len(test_names) - len(validation_names)}')
     return df
 
 
@@ -40,6 +43,17 @@ def copy_sample_data_from_zip(sample_df, image_col, image_zip_path, dest_path,
     for image_name in sample_df[image_col]:
         zip_file.extract(f'{zip_subfolder}/{image_name}.{image_extension}',
                          dest_path)
+
+
+def copy_isic_sample_to_drive():
+    drive_path = ''
+    zip_subfolder = ''
+    zip_folder_path = ''
+    sample_df = pd.read_csv('sample-1000.csv')
+    dest_path = drive_path + 'miccai/isic2020/sample-1000/'
+    if not os.path.exists(dest_path):
+        os.makedirs(dest_path)
+    copy_sample_data_from_zip(sample_df, 'image_name', zip_folder_path, dest_path, zip_subfolder, '.jpg')
 
 
 def copy_sample_data(sample_df, image_col, image_folder, dest_folder, image_extension='.jpg'):
