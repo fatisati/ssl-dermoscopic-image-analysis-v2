@@ -1,6 +1,6 @@
 import tensorflow as tf
 from keras.callbacks import CSVLogger
-
+from keras.callbacks import EarlyStopping
 
 def save_metrics(result_folder, test_metrics, validation_metrics, metric_names):
     test_metrics = [str(metric) for metric in test_metrics]
@@ -32,11 +32,11 @@ def train_model(model, train, test, validation, result_dir, epochs):
         save_freq=10)
 
     csv_logger = CSVLogger(f'{result_dir}/log.csv', append=True, separator=',')
-
+    es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=5)
     # Train the model with the new callback
     history = model.fit(train,
                         epochs=epochs,
-                        callbacks=[cp_callback, csv_logger],
+                        callbacks=[cp_callback, csv_logger, es],
                         validation_data=validation,
                         verbose=1)
     test_metrics = model.evaluate(test)
