@@ -24,8 +24,7 @@ def identify_train_test_validation(x, test_data, validation):
 def split_data(df, test_ratio, validation_ratio, x_col, label_col):
     train, test = train_test_split(df, test_size=test_ratio, random_state=0, stratify=df[[label_col]], shuffle= True)
     if validation_ratio > 0:
-        validation_ratio = validation_ratio / test_ratio
-        test, validation = train_test_split(test, test_size=validation_ratio, random_state=0, stratify=test[[label_col]])
+        train, validation = train_test_split(train, test_size=validation_ratio, random_state=0, stratify=train[[label_col]])
         validation_names = list(validation[x_col])
     else:
         validation_names = []
@@ -91,7 +90,7 @@ def under_sample_isic():
 def split_under_sample():
     data_folder = '~/data/master-thesis/'
     data = pd.read_csv(f'{data_folder}/under-sample.csv')
-    splited = split_data(data, 0.2, 0, 'image_name', 'target')
+    splited = split_data(data, 0.2, 0.25, 'image_name', 'target')
     splited.to_csv(f'{data_folder}/under-sample-splitted.csv')
 
 
