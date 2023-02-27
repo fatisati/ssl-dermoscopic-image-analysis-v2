@@ -65,13 +65,15 @@ class Isic2020Experiment:
             experiment_id = f'{experiment_id}-{name}'
         self.standard_experiment(epochs, experiment_id, get_linear_model)
 
-    def resnet_fully_supervised(self, epochs):
+    def resnet_fully_supervised(self, epochs, postfix=None):
         def get_fully_supervised_model():
             return models.get_resnet_fully_supervised_classifier(self.image_size, self.label_dim,
                                                                  hidden_dim=self.hidden_dim,
                                                                  use_batchnorm=self.batchnorm, use_dropout=self.dropout)
-
-        self.standard_experiment(epochs, 'resnet-fully-supervised',
+        name = 'resnet-fully-supervised'
+        if postfix:
+            name += f'-{postfix}'
+        self.standard_experiment(epochs, name,
                                  get_fully_supervised_model)
 
     def standard_experiment(self, epochs, model_name, get_model):
