@@ -108,6 +108,20 @@ def split_under_sample():
     splited.to_csv(f'{data_folder}/under-sample-splitted.csv')
 
 
+def sample_train_data():
+    data_folder = 'F:/data/isic2020/'
+    data_path = data_folder + 'under-sample-splitted.csv'
+    data = pd.read_csv(data_path)
+    train = data[data['split'] == 'train']
+    sample_train, _ = train_test_split(train, test_size = 0.9, random_state=0, stratify=train[['target']],
+                                       shuffle=True)
+    non_train = data[data['split'] != 'train']
+    keep_names = set(sample_train['image_name']).union(set(non_train['image_name']))
+    sampled_data = data[data['image_name'].isin(list(keep_names))]
+    sampled_data.to_csv(data_folder + f'sample-train-10percent.csv')
+
+
 if __name__ == '__main__':
+    sample_train_data()
     # under_sample_isic()
-    split_under_sample()
+    # split_under_sample()
