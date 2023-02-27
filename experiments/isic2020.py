@@ -33,11 +33,11 @@ class Isic2020Experiment:
         # compile params
         self.loss, self.optimizer, self.metrics = 'binary_crossentropy', 'adam', tf_utils.get_metrics()
 
-    def pretrained_semi_supervised(self, pretrained_path, epochs, name=''):
-        return self.pretrained(pretrained_path, epochs, True, name)
+    def pretrained_semi_supervised(self, epochs, name=''):
+        return self.pretrained(self.pretrained_path, epochs, True, name)
 
-    def pretrain_linear(self, pretrained_path, epochs, name=''):
-        return self.pretrained(pretrained_path, epochs, False, name)
+    def pretrain_linear(self, epochs, name=''):
+        return self.pretrained(self.pretrained_path, epochs, False, name)
 
     def pretrained(self, pretrained_path, epochs, trainable, name=''):
         def get_pretrained_model():
