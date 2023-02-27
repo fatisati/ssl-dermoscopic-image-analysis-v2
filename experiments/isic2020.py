@@ -6,6 +6,7 @@ from models import models
 from utils import tf_utils
 from train import train_model
 from experiments.experiment_params import ExperimentParams
+import tensorflow as tf
 
 
 # experiment params:
@@ -22,55 +23,83 @@ from experiments.experiment_params import ExperimentParams
 # evaluate
 # plots
 
-def linear(image_folder, label_file_path, model_dir, epochs, name=''):
-    def get_linear_model(image_size, label_dim, batchnorm, dropout, attention, hidden_dim):
-        return models.get_linear_classifier(image_size, label_dim, hidden_dim=hidden_dim,
-                                            use_batchnorm=batchnorm, use_dropout=dropout)
+class Isic2020Experiment:
+    def __init__(self, pretrained_path, image_folder, label_file_path, model_dir):
+        self.pretrained_path, self.image_folder, self.label_file_path, self.model_dir = pretrained_path, image_folder, label_file_path, model_dir
+        self.batch_size, self.image_size = 64, 128
+        self.batchnorm, self.dropout, self.attention, self.hidden_dim = True, False, False, 2048
+        self.label_dim = 2
 
-    experiment_id = 'linear'
-    if len(name) > 0:
-        experiment_id = f'{experiment_id}-{name}'
-    standard_experiment(image_folder, label_file_path, model_dir, epochs, experiment_id, get_linear_model)
+        # compile params
+        self.loss, self.optimizer, self.metrics = 'binary_crossentropy', 'adam', tf_utils.get_metrics()
 
+    def pretrained_semi_supervised(self, pretrained_path, epochs, name=''):
+        return self.pretrained(pretrained_path, epochs, True, name)
 
-def resnet_fully_supervised(image_folder, label_file_path, model_dir, epochs):
-    def get_fully_supervised_model(image_size, label_dim, batchnorm, dropout, attention, hidden_dim):
-        return models.get_resnet_fully_supervised_classifier(image_size, label_dim, hidden_dim=hidden_dim,
-                                                             use_batchnorm=batchnorm, use_dropout=dropout)
+    def pretrain_linear(self, pretrained_path, epochs, name=''):
+        return self.pretrained(pretrained_path, epochs, False, name)
 
-    standard_experiment(image_folder, label_file_path, model_dir, epochs, 'resnet-fully-supervised',
-                        get_fully_supervised_model)
+    def pretrained(self, pretrained_path, epochs, trainable, name=''):
+        def get_pretrained_model():
+            pretrained = tf.keras.models.load_model(pretrained_path)
+            model = models.get_classifier(pretrained, self.image_size, self.label_dim, use_attention=False,
+                                          trainable_backbone=trainable)
+            return model
 
+        experiment_id = 'pretrained'
+        if trainable:
+            experiment_id += '-semi-supervised'
+        else:
+            experiment_id += '-linear'
+        if len(name) > 0:
+            experiment_id = f'{experiment_id}-{name}'
+        self.standard_experiment(epochs, experiment_id, get_pretrained_model)
 
-def standard_experiment(image_folder, label_file_path, model_dir, epochs, model_name, get_model):
-    result_dir = f'{model_dir}/isic2020/{model_name}/'
-    if not os.path.exists(result_dir):
-        os.makedirs(result_dir)
+    def linear(self, epochs, name=''):
+        def get_linear_model():
+            return models.get_linear_classifier(self.image_size, self.label_dim, hidden_dim=self.hidden_dim,
+                                                use_batchnorm=self.batchnorm, use_dropout=self.dropout)
 
-    # data params
-    print('loading data...')
-    batch_size, image_size = 64, 128
-    aug_func = lambda img: augmentation_utils.dermoscopic_augment(img, image_size)
-    aug_name = 'dermoscopic-augment'
-    data = ISIC2020(image_folder, label_file_path, image_size)
-    train, test, validation = data.get_train_test_validation(aug_func, batch_size)
-    print('---done---')
+        experiment_id = 'linear'
+        if len(name) > 0:
+            experiment_id = f'{experiment_id}-{name}'
+        self.standard_experiment(epochs, experiment_id, get_linear_model)
 
-    # model params
-    print('define and compiling model...')
-    batchnorm, dropout, attention, hidden_dim = True, False, False, 2048
-    model = get_model(image_size, len(data.label_set), batchnorm, dropout, attention, hidden_dim)
+    def resnet_fully_supervised(self, epochs):
+        def get_fully_supervised_model():
+            return models.get_resnet_fully_supervised_classifier(self.image_size, self.label_dim,
+                                                                 hidden_dim=self.hidden_dim,
+                                                                 use_batchnorm=self.batchnorm, use_dropout=self.dropout)
 
-    # compile params
-    loss, optimizer, metrics = 'binary_crossentropy', 'adam', tf_utils.get_metrics()
-    model.compile(optimizer, loss, metrics)
-    print('---done---')
+        self.standard_experiment(epochs, 'resnet-fully-supervised',
+                                 get_fully_supervised_model)
 
-    print('training...')
-    experminet_params = ExperimentParams(data, batch_size, image_size, aug_name,
-                                         batchnorm, dropout, attention, hidden_dim,
-                                         model_name, loss, optimizer, epochs)
-    experminet_params.save_params(result_dir)
-    history = train_model(model, train, test, validation, result_dir, epochs)
-    print('---done---')
-    return history
+    def standard_experiment(self, epochs, model_name, get_model):
+        result_dir = f'{self.model_dir}/isic2020/{model_name}/'
+        if not os.path.exists(result_dir):
+            os.makedirs(result_dir)
+
+        # data params
+        print('loading data...')
+        aug_func = lambda img: augmentation_utils.dermoscopic_augment(img, self.image_size)
+        aug_name = 'dermoscopic-augment'
+        data = ISIC2020(self.image_folder, self.label_file_path, self.image_size)
+        train, test, validation = data.get_train_test_validation(aug_func, self.batch_size)
+        print('---done---')
+
+        # model params
+        print('define and compiling model...')
+        model = get_model()
+
+        # compile params
+        model.compile(self.optimizer, self.loss, self.metrics)
+        print('---done---')
+
+        print('training...')
+        experiment_params = ExperimentParams(data, self.batch_size, self.image_size, aug_name,
+                                             self.batchnorm, self.dropout, self.attention, self.hidden_dim,
+                                             model_name, self.loss, self.optimizer, epochs)
+        experiment_params.save_params(result_dir)
+        history = train_model(model, train, test, validation, result_dir, epochs)
+        print('---done---')
+        return history
