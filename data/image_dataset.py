@@ -27,8 +27,11 @@ class ImageDataset:
         one_hot[label_idx] = 1
         return one_hot
 
-    def get_ds(self, aug_func, batch_size, split):
-        data_split = self.data_df[self.data_df[self.split_col] == split]
+    def get_ds(self, aug_func, batch_size, split=None):
+        if split:
+            data_split = self.data_df[self.data_df[self.split_col] == split]
+        else:
+            data_split = self.data_df
         image_names = list(data_split[self.image_col])
         labels = list(data_split[self.label_col])
         labels = [self.one_hot(label) for label in labels]
