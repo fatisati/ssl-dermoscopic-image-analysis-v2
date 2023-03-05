@@ -51,3 +51,9 @@ def get_resnet_fully_supervised_classifier(in_shape, out_shape, hidden_dim=2048,
                                            use_batchnorm=True, use_dropout=False, dropout_rate=None):
     return get_resnet_classifier(in_shape, out_shape, True, hidden_dim,
                                  use_batchnorm, use_dropout, dropout_rate)
+
+
+def load_resent_classifier(model_path, image_size, out_shape, trainable=False):
+    model = get_resnet_classifier(image_size, out_shape, trainable)
+    model.load_weights(model_path)
+    return model
