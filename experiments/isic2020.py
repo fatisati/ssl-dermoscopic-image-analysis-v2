@@ -7,6 +7,7 @@ from utils import tf_utils
 from train import train_model
 from experiments.experiment_params import ExperimentParams
 import tensorflow as tf
+import numpy as np
 
 
 # experiment params:
@@ -70,6 +71,7 @@ class Isic2020Experiment:
             return models.get_resnet_fully_supervised_classifier(self.image_size, self.label_dim,
                                                                  hidden_dim=self.hidden_dim,
                                                                  use_batchnorm=self.batchnorm, use_dropout=self.dropout)
+
         name = 'resnet-fully-supervised'
         if postfix:
             name += f'-{postfix}'
@@ -105,3 +107,28 @@ class Isic2020Experiment:
         history = train_model(model, train, test, validation, result_dir, epochs)
         print('---done---')
         return history
+
+    def compare_models_predictions(self, models_path_list, model_names):
+        models_list = [models.load_resent_classifier(model_path, self.image_size, 2) for model_path in models_path_list]
+        aug_func = lambda img: augmentation_utils.dermoscopic_augment(img, self.image_size)
+        isic2020 = ISIC2020(self.image_folder, self.label_file_path, self.image_size)
+        data = isic2020.get_ds(aug_func, self.batch_size)
+
+        predictions = [model.predict(data) for model in models_list]
+
+        def clean_prediction(prediction):
+            return [np.argmax(prediction_row) for prediction_row in prediction]
+
+        predictions = [clean_prediction(prediction) for prediction in predictions]
+        data_df = isic2020.data_df
+
+        def add_model_prediction_correctness(model_name, prediction):
+            data_df[model_name] = prediction == data_df[isic2020.label_col]
+            return data_df
+
+        agreement = np.array([True] * len(data_df))
+        for model_name, prediction in zip(model_names, predictions):
+            data_df = add_model_prediction_correctness(model_name, prediction)
+            agreement = np.logical_and(agreement, data_df[model_name])
+        data_df['agreement'] = agreement
+        return data_df
