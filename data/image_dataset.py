@@ -5,10 +5,10 @@ from utils.augmentation_utils import dermoscopic_augment
 
 
 class ImageDataset:
-    def __init__(self, image_folder, label_file_path,
+    def __init__(self, image_folder, data_df,
                  image_col, label_col, image_size, split_col='split', image_extension='.jpg'):
         self.image_folder = image_folder
-        self.data_df = pd.read_csv(label_file_path)
+        self.data_df = data_df
         self.label_set = set(self.data_df[label_col])
         self.image_col = image_col
         self.label_col = label_col
