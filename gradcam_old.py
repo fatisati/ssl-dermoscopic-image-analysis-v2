@@ -11,11 +11,6 @@ import matplotlib.cm as cm
 
 from models import models
 
-from data.isic2020 import ISIC2020
-from utils import augmentation_utils
-import os
-import random
-
 
 def get_img_array(img_path, size):
     # `img` is a PIL image of size 299x299
@@ -147,23 +142,22 @@ def model_images_gradcam(encoder, image_names, image_folder):
 
     plt.subplots_adjust(wspace=0, hspace=0)
 
+import os
+import random
 
 if __name__ == '__main__':
-    # load model
     drive_path = '/content/drive/MyDrive/'
     model_dir = drive_path + 'miccai/models/isic2020/'
     model_path = model_dir + 'linear/best.ckpt'
+
     image_size = 128
     out_shape = 2
     model = models.load_resent_classifier(model_path, image_size, out_shape)
-    encoder_layer = model.layers[1].name
-    encoder = model.get_layer(encoder_layer)
+    encoder = model.get_layer('model_1')
 
-    # choose samples
     image_folder = '/content/isic2020-under-sample-images/'
-    all_img_names = list(os.listdir(image_folder))
-    sample_img_name = random.sample(all_img_names
-                                    , 5)
+    image_size = 128
 
-    # show gradcam
-    model_images_gradcam(encoder, sample_img_name, image_folder)
+    all_img_names = list(os.listdir(image_folder))
+    sample_img_names = random.sample(all_img_names, 5)
+    model_images_gradcam(encoder, sample_img_names, image_folder)
