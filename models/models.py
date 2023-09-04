@@ -57,3 +57,9 @@ def load_resent_classifier(model_path, image_size, out_shape, trainable=False):
     model = get_resnet_classifier(image_size, out_shape, trainable)
     model.load_weights(model_path)
     return model
+
+
+def get_resnet_model_encoder(model):
+    encoder_layer = model.layers[1].name
+    encoder = model.get_layer(encoder_layer)
+    return encoder

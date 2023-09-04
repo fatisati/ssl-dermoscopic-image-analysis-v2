@@ -156,8 +156,7 @@ if __name__ == '__main__':
     image_size = 128
     out_shape = 2
     model = models.load_resent_classifier(model_path, image_size, out_shape)
-    encoder_layer = model.layers[1].name
-    encoder = model.get_layer(encoder_layer)
+    encoder = models.get_resnet_model_encoder(model)
 
     # choose samples
     image_folder = '/content/isic2020-under-sample-images/'
